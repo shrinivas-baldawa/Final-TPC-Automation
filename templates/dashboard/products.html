@@ -1,9 +1,16 @@
 {% extends 'partials/base.html' %}
-{% block title %}Products Page{% endblock %}
+{% block title %}Placements{% endblock %}
 {% load crispy_forms_tags %}
 
 {% block content %}
 {% include 'partials/topside.html' %}
+
+<script>
+    $(document).ready(function(){
+        $('#search').select2();
+    });
+</script>
+
 <div class="row my-4">
     <div class="col-md-4">
         {% if messages %}
@@ -14,11 +21,13 @@
         {% endfor %}
         {% endif %}
         <div class="card card-body">
-            <h5>Add New Products</h5>
+            <h5>Add New Student</h5>
             <hr>
             <form method="POST">
                 {% csrf_token %}
-                {{ form|crispy }}
+                <div id="search">
+                    {{ form|crispy }}
+                </div>
                 <input class="btn btn-success btn-block" type="submit" value="Add">
             </form>
         </div>
@@ -27,28 +36,43 @@
         <table class="table bg-white">
             <thead class="bg-info text-white">
                 <tr>
+                    <th scope="col">PRN</th>
                     <th scope="col">Name</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Activity</th>
+                    <th scope="col">Offer 1</th>
+                    <th scope="col">Offer 2</th>
+                    <th scope="col">Offer 3</th>
+                    <th scope="col">Batch</th>
                 </tr>
             </thead>
             <tbody>
-                {% for product in product %}
-                <tr>
-                    <td>{{ product.name }}</td>
-                    <td>{{ product.category }}</td>
-                    <td>{{ product.quantity }}</td>
-                    <td>
-                        <a class="btn btn-info btn-sm mr-2"
-                            href="{% url 'dashboard-products-edit' product.id %}">Edit</a>
-                        <a class="btn btn-danger btn-sm ml-2"
-                            href="{% url 'dashboard-products-delete' product.id %}">Delete</a>
-                    </td>
-                </tr>
+                {% for post in page_obj.object_list %}
+              
+                    <tr>
+                        <td>{{ post.prn }}</td>
+                        <td>{{ post.name }}</td>
+                        <td>{{ post.offer1 }}</td>
+                        <td>{{ post.offer2 }}</td>
+                        <td>{{ post.offer3 }}</td>
+                        <td>{{ post.batch }}</td>
+                    </tr>
+
                 {% endfor %}
             </tbody>
         </table>
+        {%if page_obj.has_previous %} {# whether the previous page exists #}
+            <a href="?page={{page_obj.previous_page_number}}"><</a> {# link to the prev page #}
+        {% endif %}
+        <span>{{page_obj.number}}</span> {# the current page number #}
+        
+        {%if page_obj.has_next %} {# whether the next page exists #}
+            <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
+        {% endif %}
     </div>
 </div>
+
+<!-- JQuery CDN Link for Searchable Dropdown -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.min.js" integrity="sha512-5+FrEmSijjxRArJWeLcCIEgoQYAgU0gSa9MgNMN+tVSS+MPZsEk9a7OkPZr7AzjNJng1Kl+tXOQVtJcsU+Ax0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 {% endblock %}
