@@ -1,6 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
-# from phonenumber_field.modelfields import PhoneNumberField
 
 # Create your models here.
 CATEGORY = (
@@ -21,25 +19,6 @@ CATEGORY2 = (
     ('Placement','Placement'),
     ('Higher Studies','Higher Studies'),
 )
-
-
-class Product(models.Model):
-    name = models.CharField(max_length=100, null=True)
-    quantity = models.PositiveIntegerField(null=True)
-    category = models.CharField(max_length=50, choices=CATEGORY, null=True)
-
-    def __str__(self):
-        return f'{self.name}'
-
-
-class Order(models.Model):
-    name = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    order_quantity = models.PositiveIntegerField(null=True)
-
-    def __str__(self):
-        return f'{self.customer}-{self.name}'
-
 
 class Students(models.Model):
     prn = models.CharField(max_length=10, null=True)
@@ -96,3 +75,11 @@ class Companies(models.Model):
 
     def __str__(self):
         return f'{self.company}-{self.salary}'
+
+
+#Bulletin Board
+class Bulletin(models.Model):
+    notice = models.CharField(max_length=1000, null=True)
+
+    def __str__(self):
+        return f'{self.notice}'

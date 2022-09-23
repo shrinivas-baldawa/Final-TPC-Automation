@@ -5,14 +5,37 @@
 {% block content %}
 {% include 'partials/topside.html' %}
 
-<script>
-    $(document).ready(function(){
-        $('#search').select2();
-    });
-</script>
+{% if user.username == 'tpogst' %}
+<form action="{% url 'search1' %}" method="get">
+    <div class="row pt-3">
+        <div class="form-group col-sm-4">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="name" name="name">
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="offer">Company</label>
+            <input type="text" class="form-control" id="offer" placeholder="Company" name="offer">
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="branch">Branch</label>
+            <select class="form-control" id="branch" name="branch" multiple>
+            <option disabled selected>None</option>
+            <option>15-16</option>
+            <option>16-17</option>
+            <option>17-18</option>
+            <option>18-19</option>
+            <option>19-20</option>
+            <option>20-21</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endif %}
 
 <div class="row my-4">
-    <div class="col-md-4">
+    {% if user.username != 'tpogst' %}
+    <div class="col">
         {% if messages %}
         {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">
@@ -20,7 +43,7 @@
         </div>
         {% endfor %}
         {% endif %}
-        <div class="card card-body">
+        <div class="card card-body col-lg-8 mx-auto">
             <h5>Add New Student</h5>
             <hr>
             <form method="POST">
@@ -32,7 +55,10 @@
             </form>
         </div>
     </div>
-    <div class="col-md-8">
+    {% endif %}
+
+    {% if user.username == 'tpogst'%}
+    <div class="col-md-8 mx-auto">
         <table class="table bg-white">
             <thead class="bg-info text-white">
                 <tr>
@@ -68,6 +94,7 @@
             <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <!-- JQuery CDN Link for Searchable Dropdown -->

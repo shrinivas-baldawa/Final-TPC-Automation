@@ -1,0 +1,166 @@
+{% extends 'partials/base.html' %}
+{% block title %}Students{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+{% include 'partials/topside.html' %}
+
+{% if user.username == 'tpogst' %}
+<form action="{% url 'search' %}" method="get">
+    <div class="row mt-5">
+        <div class="form-group col-sm-4">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="name" name="name">
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="branch">Branch</label>
+            <select class="form-control" id="branch" name="branch" multiple>
+            <option disabled selected>None</option>
+            <option>CS</option>
+            <option>IT</option>
+            <option>EXTC</option>
+            <option>Mech</option>
+            <option>Civil</option>
+            <option>PPT</option>
+            </select>
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="cgpi">CGPI</label>
+            <input type="number" class="form-control" id="cgpi" placeholder="cgpi" name="cgpi">
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="live_kt">Live KTs</label>
+            <input type="number" class="form-control" id="live_kt" placeholder="number of live KTs" name="kt">
+        </div>
+        <div class="form-group col-sm-4">
+            <label for="choice">Choice</label>
+            <select class="form-control" id="choice" name="choice">
+              <option disabled selected>None</option>
+              <option>Placement</option>
+              <option>Higher Studies</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endif %}
+
+<div class="row my-4">
+    {% if user.username != 'tpogst' %}
+    <div class="col">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="card card-body col-lg-8 mx-auto">
+            <h5>Add New Student</h5>
+            <hr>
+            <form method="POST">
+                {% csrf_token %}
+                <div id="search">
+                    {{ form|crispy }}
+                </div>
+                <input class="btn btn-success btn-block" type="submit" value="Add">
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    {% if user.username == 'tpogst' %}
+    <div class="col-md-8 mx-auto">
+        <form action="sendMail/" method="POST">{% csrf_token %}
+            <input type="hidden" name="checkall" id="checkall">
+            <input type="checkbox" onClick="toggle(this)"/><span class="badge badge-light"> Select All </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button onclick="sendMail()" class="btn btn-outline-info">Send Mail</button>
+
+            <table class="table bg-white">
+                <thead class="bg-info text-white">
+                    <tr>
+                        <th>    </th>
+                        <th scope="col">PRN</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Branch</th>
+                        <th scope="col">Choice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in page_obj.object_list %}
+                        <tr>
+                            <td><input type="checkbox" name="check" id="checkvalue" value='{{post.prn}}' aria-label="Checkbox for following text input"></td>
+                            <td>{{ post.prn }}</td>
+                            <td>{{ post.name }}</td>
+                            <td>{{ post.branch }}</td>
+                            <td>{{ post.choice }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+        {%if page_obj.has_previous %} {# whether the previous page exists #}
+            <a href="?page={{page_obj.previous_page_number}}"><</a> {# link to the prev page #}
+        {% endif %}
+        <span>{{page_obj.number}}</span> {# the current page number #}
+        
+        {%if page_obj.has_next %} {# whether the next page exists #}
+            <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal" tabindex="-1" id="modal">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script>
+    function showModal(){
+        var modal = document.getElementById('modal');
+        modal.style.display = 'block';
+    }
+
+    function toggle(source) {
+        checkboxes = document.getElementsByName('check');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }   
+    }
+
+    function sendMail(){
+        var array = []
+        var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+
+        for (var i = 0; i < checkboxes.length; i++) {
+            array.push(checkboxes[i].value)
+        }
+
+        console.log(array)
+        document.getElementById('checkall').value = array
+    }
+</script>
+
+<!-- JQuery CDN Link for Searchable Dropdown -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.min.js" integrity="sha512-5+FrEmSijjxRArJWeLcCIEgoQYAgU0gSa9MgNMN+tVSS+MPZsEk9a7OkPZr7AzjNJng1Kl+tXOQVtJcsU+Ax0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+{% endblock %}

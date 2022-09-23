@@ -1,18 +1,11 @@
 {% extends 'partials/base.html' %}
-{% block title %}Students{% endblock %}
+{% block title %}Bulletin{% endblock %}
 {% load crispy_forms_tags %}
 
 {% block content %}
 {% include 'partials/topside.html' %}
 
-<script>
-    $(document).ready(function(){
-        $('#search').select2();
-    });
-</script>
-
 <div class="row my-4">
-    {% if user.username != 'tpogst' %}
     <div class="col-md-4">
         {% if messages %}
         {% for message in messages %}
@@ -22,7 +15,7 @@
         {% endfor %}
         {% endif %}
         <div class="card card-body">
-            <h5>Add New Student</h5>
+            <h5>Notice</h5>
             <hr>
             <form method="POST">
                 {% csrf_token %}
@@ -33,26 +26,22 @@
             </form>
         </div>
     </div>
-    {% endif %}
-    {% if user.username == 'tpogst' %}
+
     <div class="col-md-8">
         <table class="table bg-white">
             <thead class="bg-info text-white">
                 <tr>
-                    <th scope="col">PRN</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Branch</th>
-                    <th scope="col">Choice</th>
+                    <th scope="col">Bulletin Board</th>
+                    <th scope="col">    </th>
                 </tr>
             </thead>
             <tbody>
                 {% for post in page_obj.object_list %}
               
                     <tr>
-                        <td>{{ post.prn }}</td>
-                        <td>{{ post.name }}</td>
-                        <td>{{ post.branch }}</td>
-                        <td>{{ post.choice }}</td>
+                        <td>{{ post.notice }}</td>
+                        <td><a href="delete/{{ post.notice }}"><button type="button" class="btn btn-outline-danger">Delete</button>
+                        </a></td>
                     </tr>
 
                 {% endfor %}
@@ -67,7 +56,6 @@
             <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
         {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- JQuery CDN Link for Searchable Dropdown -->

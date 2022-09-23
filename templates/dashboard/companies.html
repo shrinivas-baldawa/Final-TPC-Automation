@@ -5,13 +5,8 @@
 {% block content %}
 {% include 'partials/topside.html' %}
 
-<script>
-    $(document).ready(function(){
-        $('#search').select2();
-    });
-</script>
-
 <div class="row my-4">
+    {% if user.username == 'tpogst' %}
     <div class="col-md-4">
         {% if messages %}
         {% for message in messages %}
@@ -32,7 +27,9 @@
             </form>
         </div>
     </div>
-    <div class="col-md-8">
+    {% endif %}
+
+    <div class="col-md-8 mx-auto">
         <table class="table bg-white">
             <thead class="bg-info text-white">
                 <tr>

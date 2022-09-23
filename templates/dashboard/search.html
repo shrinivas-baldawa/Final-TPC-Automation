@@ -1,0 +1,40 @@
+{% extends 'partials/base.html' %}
+{% block title %}Search{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+{% include 'partials/topside.html' %}
+
+<div class="col-md-8 mx-auto mt-4">
+    <table class="table bg-white">
+        <thead class="bg-info text-white">
+            <tr>
+                <th scope="col">PRN</th>
+                <th scope="col">Name</th>
+                <th scope="col">Branch</th>
+                <th scope="col">Choice</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in object_list %}
+          
+                <tr>
+                    <td>{{ student.prn }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.branch }}</td>
+                    <td>{{ student.choice }}</td>
+                </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+    {%if page_obj.has_previous %} {# whether the previous page exists #}
+        <a href="?page={{page_obj.previous_page_number}}"><</a> {# link to the prev page #}
+    {% endif %}
+    <span>{{page_obj.number}}</span> {# the current page number #}
+    
+    {%if page_obj.has_next %} {# whether the next page exists #}
+        <a href="?page={{page_obj.next_page_number}}">></a> {# link to the next page #}
+    {% endif %}
+</div>
+{% endblock %}

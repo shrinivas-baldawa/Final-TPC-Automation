@@ -1,19 +1,5 @@
 from django import forms
-from .models import Companies, Placements, Product, Order, Students
-
-
-class ProductForm(forms.ModelForm):
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-
-class OrderForm(forms.ModelForm):
-
-    class Meta:
-        model = Order
-        fields = ['name', 'order_quantity']
-
+from .models import Companies, Placements, Bulletin, Students
 
 class StudentForm(forms.ModelForm):
 
@@ -33,4 +19,11 @@ class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Companies
+        fields = '__all__'
+
+
+class BulletinForm(forms.ModelForm):
+
+    class Meta:
+        model = Bulletin
         fields = '__all__'

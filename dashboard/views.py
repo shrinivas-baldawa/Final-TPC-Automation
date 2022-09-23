@@ -1,14 +1,42 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from .models import Companies, Placements, Product, Order, Students
-from .forms import ProductForm, OrderForm, StudentForm, PlacementForm, CompanyForm
+from .models import Companies, Placements, Students, Bulletin
+from .forms import StudentForm, PlacementForm, CompanyForm, BulletinForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .decorators import auth_users, allowed_users
 import pandas as pd
 from django.core.paginator import Paginator
+from django.views.generic import View, ListView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db.models import Q
+from django.views.decorators.csrf import csrf_protect
+
 # Create your views here.
 
+
+class HomeView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'dashboard/index.html')
+
+class ChartData(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format = None):
+
+        df1 = pd.read_excel('media/Companies.xlsx')
+        # df2 = pd.read_excel('media/Placements.xlsx')
+
+        labels = df1['Company']
+        chartLabel = "Company Salaries"
+        chartdata = df1['Salary']
+
+        data = {
+            "labels":labels,
+            "chartLabel":chartLabel,
+            "chartdata":chartdata,
+        }
+        return Response(data)
 
 @login_required(login_url='user-login')
 def index(request):
@@ -19,11 +47,33 @@ def index(request):
     companies = Companies.objects.all()
     company_count = companies.count()
 
+    lst = []
+
+    data = Bulletin.objects.all()
+
+    p = Paginator(data,50)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+
     context = {
         'placement_count': placement_count,
         'student_count': student_count,
         'company_count': company_count,
+        'page_obj': page_obj,
     }
+
+    for column in lst:
+        _, created = Bulletin.objects.update_or_create(
+            notice = column[0],
+        )
+
     return render(request, 'dashboard/index.html', context)
 
 
@@ -35,19 +85,16 @@ def student(request):
         if form.is_valid():
             form.save()
             messages.success(request, f'Student has been added')
-            return redirect('dashboard-customers')
+            return redirect('dashboard-students')
     else:
         form = StudentForm()
 
-    prompt = {
-        'form': form
-        }
-    
+
     df = pd.read_excel('media/Students.xlsx')
     lst = []
 
-    for i in range(len(df)):
-        lst.append(df.iloc[i])
+    # for i in range(len(df)):
+    #     lst.append(df.iloc[i])
 
     data = Students.objects.all()
 
@@ -63,7 +110,6 @@ def student(request):
         page_obj = p.page(p.num_pages)
 
     prompt = {
-        # 'students': data,
         'page_obj': page_obj,
         'form': form
         }
@@ -101,7 +147,7 @@ def student(request):
             choice =  column[28],
         )
 
-    return render(request, 'dashboard/customers.html', prompt)
+    return render(request, 'dashboard/students.html', prompt)
 
 
 login_required(login_url='user-login')
@@ -111,7 +157,7 @@ def placement(request):
         if form.is_valid():
             form.save()
             messages.success(request, f'Student has been added')
-            return redirect('dashboard-products')
+            return redirect('dashboard-placements')
     else:
         form = PlacementForm()
 
@@ -151,7 +197,7 @@ def placement(request):
             batch = column[5]
         )
     
-    return render(request, 'dashboard/products.html', prompt)
+    return render(request, 'dashboard/placements.html', prompt)
 
 
 login_required(login_url='user-login')
@@ -161,7 +207,7 @@ def company(request):
         if form.is_valid():
             form.save()
             messages.success(request, f'Company has been added')
-            return redirect('dashboard-order')
+            return redirect('dashboard-companies')
     else:
         form = CompanyForm()
 
@@ -197,115 +243,120 @@ def company(request):
             salary = column[1]
         )
     
-    return render(request, 'dashboard/order.html', prompt)
+    return render(request, 'dashboard/companies.html', prompt)
 
 
+login_required(login_url='user-login')
+def bulletin(request):
+    if request.method == 'POST':
+        form = BulletinForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Notice has been added')
+            return redirect('dashboard-bulletin')
+    else:
+        form = BulletinForm()
+
+    #START FROM HERE
+    lst = []
+
+    data = Bulletin.objects.all()
+
+    p = Paginator(data,50)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+
+    prompt = {
+        # 'students': data,
+        'page_obj': page_obj,
+        'form': form
+        }
+
+    for column in lst:
+        _, created = Bulletin.objects.update_or_create(
+            notice = column[0],
+        )
+    
+    return render(request, 'dashboard/bulletin.html', prompt)
 
 
+@login_required(login_url='user-login')
+def product_delete(request, notice):
+    item = Bulletin.objects.get(notice = notice)
+    if request.method == 'POST':
+        item.delete()
+        return redirect('dashboard-bulletin')
+    context = {
+        'item': item
+    }
+    return render(request, 'dashboard/products_delete.html', context)
 
 
+class SearchResultsView(ListView):
+    model = Students
+    template_name = 'dashboard/search.html'
+
+    def get_queryset(self):  # new
+        query_name = self.request.GET.get("name")
+        query_branch = self.request.GET.getlist("branch")
+        query_cgpi = self.request.GET.get("cgpi")
+        query_kt = self.request.GET.get("kt")
+        query_choice = self.request.GET.get("choice")
+        object_list = Students.objects.all()
+        print(query_branch)
+
+        if query_name:
+            object_list = object_list.filter(Q(name__icontains=query_name))
+        if query_branch:
+            object_list = object_list.filter(Q(branch__icontains=query_branch[0]))
+            length = len(query_branch)
+            if length>1:
+                for i in range(1,length):
+                    object_list = object_list | object_list.filter(Q(branch__icontains=query_branch[i]))
+        if query_cgpi:
+            object_list = object_list.filter(Q(cgpi__range=(query_cgpi,10)))
+        if query_kt:
+            object_list = object_list.filter(Q(live_kts__range=(0,query_kt)))
+        if query_choice:
+            object_list = object_list.filter(Q(choice__icontains=query_choice))
+        
+        return object_list
 
 
+class SearchResultsView1(ListView):
+    model = Placements
+    template_name = 'dashboard/search1.html'
 
-# @login_required(login_url='user-login')
-# def products(request):
-#     product = Product.objects.all()
-#     product_count = product.count()
-#     customer = User.objects.filter(groups=2)
-#     customer_count = customer.count()
-#     order = Order.objects.all()
-#     order_count = order.count()
-#     product_quantity = Product.objects.filter(name='')
-#     if request.method == 'POST':
-#         form = ProductForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             product_name = form.cleaned_data.get('name')
-#             messages.success(request, f'{product_name} has been added')
-#             return redirect('dashboard-products')
-#     else:
-#         form = ProductForm()
-#     context = {
-#         'product': product,
-#         'form': form,
-#         'customer_count': customer_count,
-#         'product_count': product_count,
-#         'order_count': order_count,
-#     }
-#     return render(request, 'dashboard/products.html', context)
+    def get_queryset(self):  # new
+        query_name = self.request.GET.get("name")
+        query_offer = self.request.GET.get("offer")
+        query_batch = self.request.GET.get("batch")
+        object_list = Placements.objects.all()
 
+        if query_name:
+            object_list = object_list.filter(Q(name__icontains=query_name))
+        if query_offer:
+            object_list = object_list.filter(Q(offer1__icontains=query_offer)) | object_list.filter(Q(offer2__icontains=query_offer)) | object_list.filter(Q(offer3__icontains=query_offer))
 
-# @login_required(login_url='user-login')
-# def product_detail(request, pk):
-#     context = {
+        if query_batch:
+            object_list = object_list.filter(Q(batch__icontains=query_batch))
 
-#     }
-#     return render(request, 'dashboard/products_detail.html', context)
+        return object_list
 
+@csrf_protect
+def sendMail(request):
+    if request.method == 'POST':
+        var = request.POST.get('checkall')
+        mylst = var.split(',')
+        if mylst[0] == 'on':
+            mylst = mylst[1:]
 
-# @login_required(login_url='user-login')
-# @allowed_users(allowed_roles=['Admin'])
-# def customer_detail(request, pk):
-#     customer = User.objects.filter(groups=2)
-#     customer_count = customer.count()
-#     product = Product.objects.all()
-#     product_count = product.count()
-#     order = Order.objects.all()
-#     order_count = order.count()
-#     customers = User.objects.get(id=pk)
-#     context = {
-#         'customers': customers,
-#         'customer_count': customer_count,
-#         'product_count': product_count,
-#         'order_count': order_count,
-
-#     }
-#     return render(request, 'dashboard/customers_detail.html', context)
-
-
-# @login_required(login_url='user-login')
-# @allowed_users(allowed_roles=['Admin'])
-# def product_edit(request, pk):
-#     item = Product.objects.get(id=pk)
-#     if request.method == 'POST':
-#         form = ProductForm(request.POST, instance=item)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('dashboard-products')
-#     else:
-#         form = ProductForm(instance=item)
-#     context = {
-#         'form': form,
-#     }
-#     return render(request, 'dashboard/products_edit.html', context)
-
-
-# @login_required(login_url='user-login')
-# @allowed_users(allowed_roles=['Admin'])
-# def product_delete(request, pk):
-#     item = Product.objects.get(id=pk)
-#     if request.method == 'POST':
-#         item.delete()
-#         return redirect('dashboard-products')
-#     context = {
-#         'item': item
-#     }
-#     return render(request, 'dashboard/products_delete.html', context)
-
-
-# @login_required(login_url='user-login')
-# def order(request):
-#     order = Order.objects.all()
-#     order_count = order.count()
-#     customer = User.objects.filter(groups=2)
-#     customer_count = customer.count()
-#     product = Product.objects.all()
-#     product_count = product.count()
-
-#     context = {
-#         'order': order,
-#         'customer_count': customer_count,
-#         'product_count': product_count,
-#         'order_count': order_count,
-#     }
-#     return render(request, 'dashboard/order.html', context)
+        
+    return render(request, 'dashboard/students.html')
