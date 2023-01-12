@@ -13,4 +13,6 @@ urlpatterns = [
     path("search/", views.SearchResultsView.as_view(), name="search"),
     path("search1/", views.SearchResultsView1.as_view(), name="search1"),
     path("students/sendMail/", views.sendMail, name="sendMail"),
+    path("search/sendMail/", views.sendMail, name="sendMail"),
+    path("search1/sendMail/", views.sendMail, name="sendMail"),
 ]

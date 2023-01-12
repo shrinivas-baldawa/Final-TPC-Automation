@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_protect
+from django.core.mail import send_mail
 
 # Create your views here.
 
@@ -144,7 +145,7 @@ def student(request):
             perc = column[25],
             live_kts = column[26],
             dead_kts = column[27],
-            choice =  column[28],
+            choice =  column[28]
         )
 
     return render(request, 'dashboard/students.html', prompt)
@@ -358,5 +359,5 @@ def sendMail(request):
         if mylst[0] == 'on':
             mylst = mylst[1:]
 
-        
+        send_mail("TPC Website", "Hello World", "baldawashrinivas19@siesgst.ac.in", ['dbzronssj@gmail.com','ronitdey0208@gmail.com'])
     return render(request, 'dashboard/students.html')

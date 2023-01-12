@@ -140,3 +140,15 @@ LOGIN_REDIRECT_URL = 'dashboard-index'
 LOGIN_URL = 'user-login'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+
+#Email settings
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_HOST_USER = 'baldawashrinivas19@siesgst.ac.in'
+
+EMAIL_HOST_PASSWORD = 'Shrinivas1@'
+
+EMAIL_PORT = 8000
+
+EMAIL_USE_TLS_or_SSL = True
