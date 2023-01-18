@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
-from .models import Companies, Placements, Students, Bulletin
-from .forms import StudentForm, PlacementForm, CompanyForm, BulletinForm
+
+from tpcAutomation import settings
+from .models import Companies, Placements, Students, Bulletin, Marks
+from .forms import StudentForm, PlacementForm, CompanyForm, BulletinForm, MarksForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 import pandas as pd
@@ -353,11 +355,68 @@ class SearchResultsView1(ListView):
 
 @csrf_protect
 def sendMail(request):
+    placements = Placements.objects.all()
+    placement_count = placements.count()
+    students = Students.objects.all()
+    student_count = students.count()
+    companies = Companies.objects.all()
+    company_count = companies.count()
+
+    lst = []
+
+    data = Bulletin.objects.all()
+
+    p = Paginator(data,50)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = p.get_page(page_number)  # returns the desired page object
+    except PageNotAnInteger:
+        # if page_number is not an integer then assign the first page
+        page_obj = p.page(1)
+    except EmptyPage:
+        # if page is empty then return last page
+        page_obj = p.page(p.num_pages)
+
+    context = {
+        'placement_count': placement_count,
+        'student_count': student_count,
+        'company_count': company_count,
+        'page_obj': page_obj,
+    }
+
+    for column in lst:
+        _, created = Bulletin.objects.update_or_create(
+            notice = column[0],
+        )
+
     if request.method == 'POST':
         var = request.POST.get('checkall')
+        email_message = request.POST.get('email')
+        email_subject = request.POST.get('sub')
         mylst = var.split(',')
         if mylst[0] == 'on':
             mylst = mylst[1:]
+        
+        email_from = settings.EMAIL_HOST_USER
+        send_mail(email_subject, email_message, email_from, mylst)
+        return render(request, 'dashboard/index.html', context)
+    return render(request, 'dashboard/index.html', context)
 
-        send_mail("TPC Website", "Hello World", "baldawashrinivas19@siesgst.ac.in", ['dbzronssj@gmail.com','ronitdey0208@gmail.com'])
-    return render(request, 'dashboard/students.html')
+
+login_required(login_url='user-login')
+def marksheet(request):
+    
+    if request.method == 'POST':
+        form = MarksForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Marksheet has been added')
+            return redirect('dashboard-marksheet')
+    else:
+        form = MarksForm()
+
+    prompt = {
+        'form': form
+        }
+
+    return render(request,'dashboard/marksheet.html', prompt)

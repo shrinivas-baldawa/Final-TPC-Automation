@@ -2,9 +2,12 @@ from django.db import models
 
 # Create your models here.
 CATEGORY = (
-    ('Stationary', 'Stationary'),
-    ('Electronics', 'Electronics'),
-    ('Food', 'Food'),
+    ('I', 'I'),
+    ('II', 'II'),
+    ('III', 'III'),
+    ('IV', 'IV'),
+    ('V', 'V'),
+    ('VI', 'VI'),
 )
 
 CATEGORY1 = (
@@ -83,3 +86,12 @@ class Bulletin(models.Model):
 
     def __str__(self):
         return f'{self.notice}'
+
+
+class Marks(models.Model):
+    branch = models.CharField(max_length=5, choices=CATEGORY1, null=True)
+    sem = models.CharField(max_length=5, choices=CATEGORY, null=True)
+    file = models.FileField(upload_to='marksheets')
+
+    def __str__(self):
+        return f'{self.branch}-{self.sem}'

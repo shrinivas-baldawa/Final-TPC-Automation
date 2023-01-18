@@ -72,8 +72,42 @@
     <div class="col-md-8 mx-auto">
         <form action="sendMail/" method="POST">{% csrf_token %}
             <input type="hidden" name="checkall" id="checkall">
+            <input type="hidden" name="email" id="email">
+            <input type="hidden" name="sub" id="sub">
             <input type="checkbox" onClick="toggle(this)"/><span class="badge badge-light"> Select All </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <button onclick="sendMail()" class="btn btn-outline-info">Send Mail</button>
+            <button onclick="sendMail()" class="btn btn-outline-info" id="mail_button" disabled>Send Mail</button>
+
+            <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Compose Mail</button>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group">
+                                    <label for="subject" class="col-form-label">Subject:</label>
+                                    <input type="text" class="form-control" id="subject">
+                                  </div>
+                                <div class="form-group">
+                                    <label for="message-text" class="col-form-label">Message:</label>
+                                    <textarea class="form-control" id="message-text"></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="storeMessage()">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <table class="table bg-white">
                 <thead class="bg-info text-white">
@@ -113,16 +147,22 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <script>
-    function showModal(){
-        var modal = document.getElementById('modal');
-        modal.style.display = 'block';
-    }
 
     function toggle(source) {
         checkboxes = document.getElementsByName('check');
         for(var i=0, n=checkboxes.length;i<n;i++) {
             checkboxes[i].checked = source.checked;
         }   
+    }
+
+    function storeMessage(){
+        var message = document.getElementById('message-text').value
+        var subject = document.getElementById('subject').value
+
+        document.getElementById('email').value = message
+        document.getElementById('sub').value = subject
+        
+        document.getElementById('mail_button').disabled = false
     }
 
     function sendMail(){
@@ -135,6 +175,7 @@
 
         console.log(array)
         document.getElementById('checkall').value = array
+        console.log('Hi')
     }
 </script>
 
