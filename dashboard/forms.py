@@ -5,7 +5,8 @@ class StudentForm(forms.ModelForm):
 
     class Meta:
         model = Students
-        fields = '__all__'
+        # fields = ['pub_date', 'headline', 'content', 'reporter']
+        exclude = ['sem1', 'sem2', 'sem3', 'sem4', 'sem5', 'sem6']
 
 
 class PlacementForm(forms.ModelForm):

@@ -2,8 +2,7 @@ from django.db import models
 
 # Create your models here.
 CATEGORY = (
-    ('I', 'I'),
-    ('II', 'II'),
+    ('I-II', 'I-II'),
     ('III', 'III'),
     ('IV', 'IV'),
     ('V', 'V'),
@@ -44,12 +43,12 @@ class Students(models.Model):
     diploma_year = models.FloatField(null=True, blank=True)
     sem1 = models.FloatField(null=True, blank=True)
     sem2 = models.FloatField(null=True, blank=True)
-    sem3 = models.FloatField(null=True, blank=False)
-    sem4 = models.FloatField(null=True, blank=False)
-    sem5 = models.FloatField(null=True, blank=False)
-    sem6 = models.FloatField(null=True, blank=False)
-    cgpi = models.FloatField(null=True, blank=False)
-    perc = models.FloatField(null=True, blank=False)
+    sem3 = models.FloatField(null=True, blank=True)
+    sem4 = models.FloatField(null=True, blank=True)
+    sem5 = models.FloatField(null=True, blank=True)
+    sem6 = models.FloatField(null=True, blank=True)
+    cgpi = models.FloatField(null=True, blank=True)
+    perc = models.FloatField(null=True, blank=True)
     live_kts = models.IntegerField(null=True, blank=True)
     dead_kts = models.IntegerField(null=True, blank=True)
     choice = models.CharField(max_length=15, choices=CATEGORY2, null=True)

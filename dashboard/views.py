@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-
+import os
 from tpcAutomation import settings
 from .models import Companies, Placements, Students, Bulletin, Marks
 from .forms import StudentForm, PlacementForm, CompanyForm, BulletinForm, MarksForm
@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.core.mail import send_mail
 
 # Create your views here.
-
+fileName = ""
 
 class HomeView(View):
     def get(self, request, *args, **kwargs):
@@ -351,6 +351,7 @@ class SearchResultsView1(ListView):
         if query_batch:
             object_list = object_list.filter(Q(batch__icontains=query_batch))
 
+        print(object_list)
         return object_list
 
 @csrf_protect
@@ -406,11 +407,63 @@ def sendMail(request):
 login_required(login_url='user-login')
 def marksheet(request):
     
+    def check_gpa():
+        semValue = form.cleaned_data['sem']
+        print(semValue)
+        if(semValue == 'I-II'):
+            df = pd.read_excel(f'media/marksheets/{fileName}')
+            df.rename(columns={'Unnamed: 0': 'SNO', 'Unnamed: 1': 'GRNO', 'Unnamed: 2': 'NAME'}, inplace=True)
+            df = df.drop(0)
+            df.head(10)
+
+            CheckList = list(df.index)
+
+            for i in CheckList:
+                # Do try catch
+                try:
+                    t = Students.objects.get(prn=i)
+                    t.sem1 = df.loc[i]['SEM-I']
+                    t.sem2 = df.loc[i]['SEM-II']
+                    t.save()
+
+                except:
+                    pass
+        else:
+            # for sem 3-6
+            df = pd.read_excel(f'media/marksheets/{fileName}')
+            df.columns = list(df.iloc[3])
+            df = df.drop(labels=[0,1,2,3,4,5,6,7], axis=0)
+            df = df.set_index("GRNO")
+        
+            CheckList = list(df.index)
+
+            for i in CheckList:
+                # Do try catch
+                try:
+                    t = Students.objects.get(prn=i)
+                    if(semValue == 'III'):
+                        t.sem3 = df.loc[i]['GPA']
+                    elif(semValue == 'IV'):
+                        t.sem4 = df.loc[i]['GPA']
+                    elif(semValue == 'V'):
+                        t.sem5 = df.loc[i]['GPA']
+                    else:
+                        t.sem6 = df.loc[i]['GPA']
+                    t.save()
+
+                except:
+                    pass
+
+        os.remove(f'media/marksheets/{fileName}')
+
     if request.method == 'POST':
         form = MarksForm(request.POST, request.FILES)
+        global fileName
+        fileName = request.FILES.get('file').name
         if form.is_valid():
             form.save()
             messages.success(request, f'Marksheet has been added')
+            check_gpa()
             return redirect('dashboard-marksheet')
     else:
         form = MarksForm()
@@ -419,4 +472,4 @@ def marksheet(request):
         'form': form
         }
 
-    return render(request,'dashboard/marksheet.html', prompt)
+    return render(request,'dashboard/marksheet.html', prompt)    

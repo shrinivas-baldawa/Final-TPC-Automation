@@ -1,7 +1,31 @@
 body{
-    background: rgb(230, 227, 227);
+    background-image: url('../media/Logo.png');
 }
 .my-card:hover{
     transform: scale(1.1);
     transition: 0.2s ease-in-out;
+}
+
+.flex-container {
+    display: flex;
+}
+
+.flex-child {
+    flex: 1;
+}  
+
+.flex-child:first-child {
+    display: flex;
+} 
+
+.flex-child.magenta{
+    background-color: white;
+    height: max-content;
+    margin-top: 65px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    align-items: center;
+    border: 1px rgb(221, 221, 221) solid;
+    border-radius: 5px;
 }
